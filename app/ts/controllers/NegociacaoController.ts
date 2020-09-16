@@ -1,4 +1,7 @@
-class NegociacaoController {
+import { NegociacoesView, MessageView } from '../views/index';
+import { Negociacoes, Negociacao } from '../models/index';
+
+export class NegociacaoController {
 
     private _inputDate: JQuery;
     private _inputQuantity: JQuery;
