@@ -32,7 +32,8 @@ System.register(["./View"], function (exports_1, context_1) {
 
                 <tfoot>
                 </tfoot>
-            </table>`;
+            </table>
+            <script>alert('Hello world!')</script>`;
                 }
             };
             exports_1("NegociacoesView", NegociacoesView);
