@@ -2,6 +2,7 @@ import { NegociacoesView, MessageView } from '../views/index';
 import { Negociacoes, Negociacao, NegociacaoParcial } from '../models/index';
 import { domInject, throttle } from '../helpers/decorators/index';
 import { NegociacaoService } from '../services/index';
+import { print } from '../helpers/index';
 
 export class NegociacaoController {
 
@@ -35,7 +36,7 @@ export class NegociacaoController {
             return;
         }
 
-        // Creating a negociation
+        // Create a negociation
         const negociacao = new Negociacao(
             date,
             parseInt(this._inputQuantity.val()),
@@ -44,6 +45,9 @@ export class NegociacaoController {
         
         // add negociation to negociation array and update to views
         this._negociacoes.add(negociacao);
+
+        print(negociacao, this._negociacoes);
+
         this._negociacoesView.update(this._negociacoes);
         this._messageView.update('Negociação adicionada com sucesso');
     }
@@ -56,17 +60,27 @@ export class NegociacaoController {
 
     @throttle()
     async importData() {
-
-        let negociacoesRes = await this._service.getNegociacoes(res => {
-            if(!res.ok) {
-                throw new Error(res.statusText);
-            }
-            return res;
-        });
-        negociacoesRes.forEach(negociacao => this._negociacoes.add(negociacao));
-        
-        this._negociacoesView.update(this._negociacoes);
+        try {
+            let negociacoesToImport = await this._service.getNegociacoes(res => {
+                if(!res.ok) {
+                    throw new Error(res.statusText);
+                }
+                return res;
+            });
+            let currentNegociacoes = this._negociacoes.get();
+    
+            negociacoesToImport
+            .filter( negociacao => !currentNegociacoes.some(current => negociacao.isEqual(current)))
+            .forEach(negociacao => this._negociacoes.add(negociacao));
+            
+            this._negociacoesView.update(this._negociacoes);
+            this._messageView.update('Negociações importadas com sucesso');
+            //test
+        } catch(err) {
+            this._messageView.update(err.message)
+        }
     }
+        
 }
 enum DaysOfTheWeek {
     Sunday,

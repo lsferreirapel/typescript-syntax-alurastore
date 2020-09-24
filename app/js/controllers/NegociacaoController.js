@@ -1,4 +1,4 @@
-System.register(["../views/index", "../models/index", "../helpers/decorators/index", "../services/index"], function (exports_1, context_1) {
+System.register(["../views/index", "../models/index", "../helpers/decorators/index", "../services/index", "../helpers/index"], function (exports_1, context_1) {
     "use strict";
     var __decorate = (this && this.__decorate) || function (decorators, target, key, desc) {
         var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -15,7 +15,7 @@ System.register(["../views/index", "../models/index", "../helpers/decorators/ind
         });
     };
     var __moduleName = context_1 && context_1.id;
-    var index_1, index_2, index_3, index_4, NegociacaoController, DaysOfTheWeek;
+    var index_1, index_2, index_3, index_4, index_5, NegociacaoController, DaysOfTheWeek;
     return {
         setters: [
             function (index_1_1) {
@@ -29,6 +29,9 @@ System.register(["../views/index", "../models/index", "../helpers/decorators/ind
             },
             function (index_4_1) {
                 index_4 = index_4_1;
+            },
+            function (index_5_1) {
+                index_5 = index_5_1;
             }
         ],
         execute: function () {
@@ -48,6 +51,7 @@ System.register(["../views/index", "../models/index", "../helpers/decorators/ind
                     }
                     const negociacao = new index_2.Negociacao(date, parseInt(this._inputQuantity.val()), parseFloat(this._inputValue.val()));
                     this._negociacoes.add(negociacao);
+                    index_5.print(negociacao, this._negociacoes);
                     this._negociacoesView.update(this._negociacoes);
                     this._messageView.update('Negociação adicionada com sucesso');
                 }
@@ -57,14 +61,23 @@ System.register(["../views/index", "../models/index", "../helpers/decorators/ind
                 }
                 importData() {
                     return __awaiter(this, void 0, void 0, function* () {
-                        let negociacoesRes = yield this._service.getNegociacoes(res => {
-                            if (!res.ok) {
-                                throw new Error(res.statusText);
-                            }
-                            return res;
-                        });
-                        negociacoesRes.forEach(negociacao => this._negociacoes.add(negociacao));
-                        this._negociacoesView.update(this._negociacoes);
+                        try {
+                            let negociacoesToImport = yield this._service.getNegociacoes(res => {
+                                if (!res.ok) {
+                                    throw new Error(res.statusText);
+                                }
+                                return res;
+                            });
+                            let currentNegociacoes = this._negociacoes.get();
+                            negociacoesToImport
+                                .filter(negociacao => !currentNegociacoes.some(current => negociacao.isEqual(current)))
+                                .forEach(negociacao => this._negociacoes.add(negociacao));
+                            this._negociacoesView.update(this._negociacoes);
+                            this._messageView.update('Negociações importadas com sucesso');
+                        }
+                        catch (err) {
+                            this._messageView.update(err.message);
+                        }
                     });
                 }
             };
